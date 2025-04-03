@@ -12,6 +12,10 @@ the GNU public licence.  See http://www.opensource.org for details.
 
 #include <config.h>
 
+#include <immintrin.h>
+#include <stdlib.h>
+
+
 #ifndef AVX_H
 #define AVX_H
 
@@ -22,9 +26,26 @@ the GNU public licence.  See http://www.opensource.org for details.
 #include "times.h"
 #include "mixt.h"
 
+#include <immintrin.h>
+#include <stdlib.h>
+#include <stdint.h>
+
 
 #if (defined(__AVX__) || defined(__AVX2__))
+#define ALIGNED(ptr) __builtin_assume_aligned((ptr), 32)
+#define IS_LIKELY(x) __builtin_expect((x), 1)
+#define IS_UNLIKELY(x) __builtin_expect((x), 0)
+#define UNROLL4 _Pragma("GCC unroll 4")
+#define PREFETCH(ptr) __builtin_prefetch((ptr), 0, 3)
 
+
+static inline double mm256_reduce_max_pd(__m256d v) {
+    __m128d vlow = _mm256_castpd256_pd128(v);
+    __m128d vhigh = _mm256_extractf128_pd(v, 1);
+    vlow = _mm_max_pd(vlow, vhigh);
+    __m128d high64 = _mm_unpackhi_pd(vlow, vlow);
+    return _mm_cvtsd_f64(_mm_max_pd(vlow, high64));
+}
 void AVX_Update_Partial_Lk(t_tree *tree,t_edge *b_fcus,t_node *n);
 void AVX_Update_Eigen_Lr(t_edge *b, t_tree *tree);
 phydbl AVX_Lk_Core_One_Class_Eigen_Lr(const phydbl *dot_prod, const phydbl *expl, const unsigned int ns);

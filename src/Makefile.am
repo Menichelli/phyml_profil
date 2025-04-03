@@ -187,6 +187,7 @@ sse.c sse.h\
 avx.c avx.h\
 ancestral.c ancestral.h\
 mpi_boot.c mpi_boot.h
+# phyml_mpi_LDFLAGS = -mavx2 -std=c11
 # phyml_mpi_LDADD = -lm
 else
 if WANT_WIN
